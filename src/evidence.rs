@@ -5,6 +5,7 @@ pub enum EvidenceType {
     Maternal,
     Transmitted,
     Reference,
+    Paternal,
 }
 
 pub struct EvidenceTable {
@@ -17,6 +18,7 @@ pub struct BarcodeTally {
     pub transmitted_count: i32,
     pub maternal_count: i32,
     pub reference_count: i32,
+    pub paternal_count: i32,
 }
 
 impl BarcodeTally {
@@ -26,14 +28,16 @@ impl BarcodeTally {
             transmitted_count: 0,
             maternal_count: 0,
             reference_count: 0,
+            paternal_count: 0,
         }
     }
 
     #[inline(always)]
-    pub fn update(&mut self, offset: (i32, i32, i32)) {
+    pub fn update(&mut self, offset: (i32, i32, i32, i32)) {
         self.maternal_count += offset.0;
         self.transmitted_count += offset.1;
         self.reference_count += offset.2;
+        self.paternal_count += offset.3;
     }
 
     pub fn haplotype_class(self) -> EvidenceType {
@@ -88,14 +92,16 @@ impl EvidenceTable {
                 let mut mats: i32 = 0;
                 let mut trans: i32 = 0;
                 let mut refs: i32 = 0;
+                let mut pat: i32 = 0;
                 v.iter().for_each(|v| {
                     match *v {
                         (EvidenceType::Maternal, count) => mats += count,
                         (EvidenceType::Transmitted, count) => trans += count,
                         (EvidenceType::Reference, count) => refs += count,
+                        (EvidenceType::Paternal, count) => pat += count,
                     }
                 });
-                (mats, trans, refs)
+                (mats, trans, refs, pat)
             };
             tally.update(adds);
         }

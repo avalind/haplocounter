@@ -89,6 +89,23 @@ fn main() {
         };
         let father_id = header_view.sample_id(&father_sample_id.as_bytes()).unwrap();
 
+
+        for (idx, rr) in vcf.records().enumerate() {
+            let mut rec = rr.expect("Unable to read vcf record");
+            let ctg = match rec.rid() {
+                Some(r) => r,
+                None => panic!("malformed vcf file, panicking"),
+            };
+
+            aln.fetch((header_view.rid2name(ctg).unwrap(), rec.pos(), rec.pos()+1));
+            for p in aln.pileup() {
+                let pileup = p.unwrap();
+                if i64::from(pileup.pos()) == rec.pos() {
+                    tally_evidence(&mut tab, &rec, &pileup, evidence::EvidenceType::Paternal);
+                }
+            }
+        }
+        tab.classify();
     } else {
         let name_mother = match(args.name_mother) {
             Some(name) => name,
